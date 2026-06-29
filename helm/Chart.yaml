@@ -1,0 +1,20 @@
+apiVersion: v2
+name: payment-service
+description: Payment processing service for production workloads
+type: application
+version: 1.4.0
+appVersion: "2.4.1"
+
+keywords:
+  - payment
+  - pci
+  - production
+
+maintainers:
+  - name: Platform Engineering
+    email: platform@company.com
+
+annotations:
+  environment: production
+  team: platform
+  pci-scope: "true"

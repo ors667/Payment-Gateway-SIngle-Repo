@@ -1,0 +1,63 @@
+# Payment Service — Helm Values (production)
+
+replicaCount: 3
+
+image:
+  repository: 123456789.dkr.ecr.us-east-1.amazonaws.com/payment-service
+  tag: "v2.4.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# -----------------------------------------------------------
+# Security context
+# See: Container Hardening Guide §3.1
+# -----------------------------------------------------------
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+  # ❌ Must be true per Security Policy §3.1 — never updated before go-live
+  readOnlyRootFilesystem: false
+
+env:
+  - name: ENV
+    value: production
+  - name: DB_HOST
+    valueFrom:
+      secretKeyRef:
+        name: payment-db-secret
+        key: host
+  - name: DB_PORT
+    value: "5432"
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
